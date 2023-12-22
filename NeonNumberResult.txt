@@ -1,0 +1,527 @@
+type Integer_Constant = int
+
+type Boolean_Constant = bool
+
+datatype Variable = DC of string
+
+datatype Arithmatic_Op = Div | Minus | Plus | Times
+
+datatype Relational_Op = Eq | Ge | Gt | Le | Lt | Ne
+datatype Boolean_Op = And | Or
+
+datatype Operator
+  = AO of Arithmatic_Op | BO of Boolean_Op | RO of Relational_Op
+
+datatype Expression
+  = Bool_Const of bool
+  | Int_Const of int
+  | OEE of Operator * Expression * Expression
+  | Var of Variable
+
+datatype Instruction
+  = Assign of Variable * Expression
+  | Cond of Expression * Instruction * Instruction
+  | InstrSeq of Instruction list
+  | Skip
+  | loop of Expression * Instruction
+
+datatype Type = BV | IV
+
+type Declaration = Variable * Type
+type DeclarationList = Declaration list
+type Program = DeclarationList * Instruction
+
+val d1 = (DC "num",IV) : Declaration
+
+val d2 = (DC "square",IV) : Declaration
+
+val d3 = (DC "temp",IV) : Declaration
+
+val d4 = (DC "digit",IV) : Declaration
+
+val d5 = (DC "sum",IV) : Declaration
+
+val d6 = (DC "answer",BV) : Declaration
+
+val DecVarList =
+  [(DC "num",IV),(DC "square",IV),(DC "temp",IV),(DC "digit",IV),
+   (DC "sum",IV),(DC "answer",BV)] : Declaration list
+
+val DVarList =
+  [(DC "num",IV),(DC "square",IV),(DC "temp",IV),(DC "digit",IV),
+   (DC "sum",IV),(DC "answer",BV)] : DeclarationList
+
+val a1 = Assign (DC "temp",Var (DC "square")) : Instruction
+
+val exp1 = OEE (AO Div,Var (DC "square"),Int_Const 10) : Expression
+
+val a2 = Assign (DC "square",OEE (AO Div,Var (DC "square"),Int_Const 10))
+  : Instruction
+
+val exp2 = OEE (AO Times,Var (DC "square"),Int_Const 10) : Expression
+
+val exp3 =
+  OEE (AO Minus,Var (DC "temp"),OEE (AO Times,Var (DC "square"),Int_Const 10))
+  : Expression
+
+val a3 =
+  Assign
+    (DC "digit",
+     OEE
+       (AO Minus,Var (DC "temp"),
+        OEE (AO Times,Var (DC "square"),Int_Const 10))) : Instruction
+
+val exp4 = OEE (AO Plus,Var (DC "sum"),Var (DC "digit")) : Expression
+
+val a4 = Assign (DC "sum",OEE (AO Plus,Var (DC "sum"),Var (DC "digit")))
+  : Instruction
+
+val whilecond1 = OEE (RO Ne,Var (DC "square"),Int_Const 0) : Expression
+
+val whileSeqList =
+  InstrSeq
+    [Assign (DC "temp",Var (DC "square")),
+     Assign (DC "square",OEE (AO Div,Var (DC "square"),Int_Const 10)),
+     Assign
+       (DC "digit",
+        OEE (AO Minus,Var (DC "temp"),OEE (AO Times,Var (DC #),Int_Const 10))),
+     Assign (DC "sum",OEE (AO Plus,Var (DC "sum"),Var (DC "digit")))]
+  : Instruction
+
+val while1 =
+  loop
+    (OEE (RO Ne,Var (DC "square"),Int_Const 0),
+     InstrSeq
+       [Assign (DC "temp",Var (DC "square")),
+        Assign (DC "square",OEE (AO Div,Var (DC #),Int_Const 10)),
+        Assign (DC "digit",OEE (AO Minus,Var (DC #),OEE (#,#,#))),
+        Assign (DC "sum",OEE (AO Plus,Var (DC #),Var (DC #)))]) : Instruction
+
+val Ifcond2 = OEE (RO Eq,Var (DC "sum"),Var (DC "num")) : Expression
+
+val ThenStmt2 = Assign (DC "answer",Bool_Const true) : Instruction
+
+val elseStmt2 = Assign (DC "answer",Bool_Const false) : Instruction
+
+val if1 =
+  Cond
+    (OEE (RO Eq,Var (DC "sum"),Var (DC "num")),
+     Assign (DC "answer",Bool_Const true),
+     Assign (DC "answer",Bool_Const false)) : Instruction
+
+val exp5 = OEE (AO Times,Var (DC "num"),Var (DC "num")) : Expression
+
+val a5 = Assign (DC "square",OEE (AO Times,Var (DC "num"),Var (DC "num")))
+  : Instruction
+
+val a6 = Assign (DC "sum",Int_Const 0) : Instruction
+
+val elseStmt1 =
+  InstrSeq
+    [Assign (DC "square",OEE (AO Times,Var (DC "num"),Var (DC "num"))),
+     Assign (DC "sum",Int_Const 0),
+     loop
+       (OEE (RO Ne,Var (DC "square"),Int_Const 0),
+        InstrSeq
+          [Assign (DC "temp",Var (DC #)),Assign (DC "square",OEE (#,#,#)),
+           Assign (DC "digit",OEE (#,#,#)),Assign (DC "sum",OEE (#,#,#))]),
+     Cond
+       (OEE (RO Eq,Var (DC "sum"),Var (DC "num")),
+        Assign (DC "answer",Bool_Const true),
+        Assign (DC "answer",Bool_Const false))] : Instruction
+
+val Ifcond1 = OEE (RO Lt,Var (DC "num"),Int_Const 0) : Expression
+
+val ThenStmt1 = Assign (DC "answer",Bool_Const false) : Instruction
+
+val IFCOND1 =
+  Cond
+    (OEE (RO Lt,Var (DC "num"),Int_Const 0),
+     Assign (DC "answer",Bool_Const false),
+     InstrSeq
+       [Assign (DC "square",OEE (AO Times,Var (DC #),Var (DC #))),
+        Assign (DC "sum",Int_Const 0),
+        loop
+          (OEE (RO Ne,Var (DC #),Int_Const 0),
+           InstrSeq [Assign (#,#),Assign (#,#),Assign (#,#),Assign (#,#)]),
+        Cond
+          (OEE (RO Eq,Var (DC #),Var (DC #)),
+           Assign (DC "answer",Bool_Const true),
+           Assign (DC "answer",Bool_Const false))]) : Instruction
+
+val a7 = Assign (DC "num",Int_Const 9) : Instruction
+
+val PrgmList =
+  InstrSeq
+    [Assign (DC "num",Int_Const 9),
+     Cond
+       (OEE (RO Lt,Var (DC "num"),Int_Const 0),
+        Assign (DC "answer",Bool_Const false),
+        InstrSeq
+          [Assign (DC "square",OEE (#,#,#)),Assign (DC "sum",Int_Const 0),
+           loop (OEE (#,#,#),InstrSeq [#,#,#,#]),
+           Cond (OEE (#,#,#),Assign (#,#),Assign (#,#))])] : Instruction
+
+val Prgm =
+  ([(DC "num",IV),(DC "square",IV),(DC "temp",IV),(DC "digit",IV),
+    (DC "sum",IV),(DC "answer",BV)],
+   InstrSeq
+     [Assign (DC "num",Int_Const 9),
+      Cond
+        (OEE (RO Lt,Var (DC "num"),Int_Const 0),
+         Assign (DC "answer",Bool_Const false),
+         InstrSeq
+           [Assign (DC #,OEE #),Assign (DC #,Int_Const #),
+            loop (OEE #,InstrSeq #),Cond (OEE #,Assign #,Assign #)])])
+  : DeclarationList * Instruction
+
+stdIn:39321.59-39321.61 Warning: calling polyEqual
+
+val NOShowInDeclist = fn : (Variable * Type) list -> Variable -> bool
+val DecListValidity = fn : DeclarationList -> bool
+val DecGoodresTC1 = true : bool
+
+val Bad_d1 = (DC "num",IV) : Declaration
+
+val Bad_d2 = (DC "square",IV) : Declaration
+
+val Bad_d3 = (DC "temp",IV) : Declaration
+
+val Bad_d4 = (DC "num",IV) : Declaration
+
+val Bad_d5 = (DC "sum",IV) : Declaration
+
+val Bad_d6 = (DC "answer",BV) : Declaration
+
+val Bad_DecVarList =
+  [(DC "num",IV),(DC "square",IV),(DC "temp",IV),(DC "num",IV),(DC "sum",IV),
+   (DC "answer",BV)] : Declaration list
+
+val DecBadresTC2 = false : bool
+
+datatype InternalType = InternalNoType | InternalTypeBool | InternalTypeInt
+
+type TypeMapTable = Variable -> InternalType
+
+val FirstTypeMapTable = fn : Variable -> InternalType
+
+val FirstTMTresTC2_Var1 = InternalNoType : InternalType
+
+val FirstTMTresTC2_Var2 = InternalNoType : InternalType
+
+val FirstTMTresTC2_Var3 = InternalNoType : InternalType
+
+val FirstTMTresTC2_Var4 = InternalNoType : InternalType
+
+val FirstTMTresTC2_Var5 = InternalNoType : InternalType
+
+val FirstTMTresTC2_Var6 = InternalNoType : InternalType
+
+stdIn:39368.49 Warning: calling polyEqual
+stdIn:39369.43 Warning: calling polyEqual
+
+val ChangeTypeMapTable = fn
+  : TypeMapTable -> Variable * Type -> Variable -> InternalType
+
+val MyTypeMapTable1 = fn : Variable -> InternalType
+
+val it = InternalTypeInt : InternalType
+
+val it = InternalNoType : InternalType
+
+val it = InternalNoType : InternalType
+
+val it = InternalNoType : InternalType
+
+val it = InternalNoType : InternalType
+
+val it = InternalNoType : InternalType
+
+val MyTypeMapTable2 = fn : Variable -> InternalType
+
+val it = InternalNoType : InternalType
+val it = InternalTypeInt : InternalType
+
+val it = InternalNoType : InternalType
+
+val it = InternalNoType : InternalType
+
+val it = InternalNoType : InternalType
+
+val it = InternalNoType : InternalType
+
+val DecListToTypeMapTable = fn : Declaration list -> Variable -> InternalType
+
+val MyTable1 = fn : Variable -> InternalType
+
+val it = InternalTypeInt : InternalType
+
+val it = InternalTypeInt : InternalType
+
+val it = InternalTypeInt : InternalType
+
+val it = InternalTypeInt : InternalType
+
+val it = InternalTypeInt : InternalType
+
+val it = InternalTypeBool : InternalType
+
+val it = InternalNoType : InternalType
+
+val TypeOfExpression = fn : TypeMapTable -> Expression -> InternalType
+val ExpressionValidity = fn : Expression -> TypeMapTable -> bool
+val ExpGoodResTC1 = true : bool
+
+val ExpGoodResTC2 = true : bool
+
+val ExpGoodResTC3 = true : bool
+
+val ExpGoodResTC4 = true : bool
+
+val ExpGoodResTC5 = true : bool
+
+val ExpGoodResTC6 = true : bool
+
+val ExpGoodResTC7 =
+  OEE (AO Times,Int_Const 7,OEE (AO Plus,Int_Const 3,Int_Const 4))
+  : Expression
+
+val ExpGoodResTC8 = true : bool
+
+val badexp =
+  OEE
+    (AO Times,Var (DC "count"),
+     OEE (AO Plus,Int_Const 5,OEE (AO Div,Var (DC "total"),Int_Const 2)))
+  : Expression
+
+val ExpBadResTC1 = false : bool
+
+val InstructionValidity = fn : Instruction -> TypeMapTable -> bool
+
+val InstGoodResTC1 = true : bool
+
+val InstGoodResTC2 = true : bool
+
+val InstGoodResTC3 = true : bool
+
+val InstGoodResTC4 = true : bool
+
+val InstGoodResTC5 = true : bool
+val InstGoodResTC6 = true : bool
+
+val badInstAssign = Assign (DC "digit",Bool_Const true) : Instruction
+
+val InstBadResTC1 = false : bool
+
+exception InvalidDecList
+
+exception InvalidProgramBody
+
+val ProgramValidity = fn : DeclarationList * Instruction -> bool
+
+val ProgramValidity_TC1 = true : bool
+
+datatype ValueInMemory = VB of bool | VI of int | VTrash
+
+type ProgStateInMemory = Variable -> ValueInMemory
+
+val FirstProgStateInMemory = fn : Variable -> ValueInMemory
+
+val MyFirstProgStateInMemoryTC = VTrash : ValueInMemory
+
+val MyFirstProgStateInMemoryTC = VTrash : ValueInMemory
+
+val MyFirstProgStateInMemoryTC = VTrash : ValueInMemory
+
+val MyFirstProgStateInMemoryTC = VTrash : ValueInMemory
+
+val MyFirstProgStateInMemoryTC = VTrash : ValueInMemory
+
+val MyFirstProgStateInMemoryTC = VTrash : ValueInMemory
+
+stdIn:39566.35 Warning: calling polyEqual
+
+val ChangeProgramStateInMemory = fn
+  : Variable
+     -> ValueInMemory -> ProgStateInMemory -> Variable -> ValueInMemory
+val MyProgStateInMemory_TC1 = fn : Variable -> ValueInMemory
+
+val it = VI 9 : ValueInMemory
+
+val it = VTrash : ValueInMemory
+
+val it = VTrash : ValueInMemory
+
+val it = VTrash : ValueInMemory
+
+val it = VTrash : ValueInMemory
+
+val it = VTrash : ValueInMemory
+
+val MyProgStateInMemory_TC2 = fn : Variable -> ValueInMemory
+
+val it = VI 81 : ValueInMemory
+
+val it = VI 9 : ValueInMemory
+
+val it = VTrash : ValueInMemory
+
+val it = VTrash : ValueInMemory
+
+val it = VTrash : ValueInMemory
+
+val it = VTrash : ValueInMemory
+
+val MyProgStateInMemory_TC3 = fn : Variable -> ValueInMemory
+
+val it = VI 0 : ValueInMemory
+
+val it = VI 81 : ValueInMemory
+
+val it = VI 9 : ValueInMemory
+
+val it = VTrash : ValueInMemory
+
+val it = VTrash : ValueInMemory
+
+val it = VTrash : ValueInMemory
+
+val MyProgStateInMemory_TC4 = fn : Variable -> ValueInMemory
+
+val it = VI 500 : ValueInMemory
+val it = VI 0 : ValueInMemory
+val it = VI 81 : ValueInMemory
+val it = VI 9 : ValueInMemory
+val it = VTrash : ValueInMemory
+val it = VTrash : ValueInMemory
+val MyProgStateInMemory_TC5 = fn : Variable -> ValueInMemory
+val it = VI 1 : ValueInMemory
+val it = VI 0 : ValueInMemory
+val it = VI 81 : ValueInMemory
+
+val it = VI 9 : ValueInMemory
+
+val it = VI 500 : ValueInMemory
+
+val it = VTrash : ValueInMemory
+
+val MyProgStateInMemory_TC6 = fn : Variable -> ValueInMemory
+
+val it = VB true : ValueInMemory
+
+val it = VI 0 : ValueInMemory
+
+val it = VI 81 : ValueInMemory
+val it = VI 9 : ValueInMemory
+
+val it = VI 500 : ValueInMemory
+
+val it = VI 1 : ValueInMemory
+
+exception ZeroInDivision
+
+exception WrongOperationInArithE
+
+val MeaningArithE = fn
+  : ValueInMemory * ValueInMemory -> Arithmatic_Op -> ValueInMemory
+
+exception WrongOperandInRelaE
+
+val MeaningRelaE = fn
+  : ValueInMemory * ValueInMemory -> Relational_Op -> ValueInMemory
+
+exception WrongOperandInBoolE
+
+val MeaningBoolE = fn
+  : ValueInMemory * ValueInMemory -> Boolean_Op -> ValueInMemory
+
+val MeaningExpression = fn : Expression -> ProgStateInMemory -> ValueInMemory
+val MeaningExpression_TC1 = VI 9 : ValueInMemory
+
+val MeaningExpression_TC2 = VI 1 : ValueInMemory
+val MeaningExpression_TC3 = VB true : ValueInMemory
+val MeaningExpression_TC4 = VI 90 : ValueInMemory
+
+val MeaningExpression_TC5 = VB true : ValueInMemory
+
+val MeaningExpression_TC6 = VB false : ValueInMemory
+
+val MeaningInstruction = fn
+  : Instruction -> ProgStateInMemory -> ProgStateInMemory
+
+val MeaningInstruction_TC1 = fn : ProgStateInMemory
+
+val it = VTrash : ValueInMemory
+
+val it = VTrash : ValueInMemory
+
+val it = VTrash : ValueInMemory
+
+val it = VI 0 : ValueInMemory
+
+val it = VTrash : ValueInMemory
+
+val it = VTrash : ValueInMemory
+
+val MeaningInstruction_TC2 = fn : ProgStateInMemory
+
+val it = VI 9 : ValueInMemory
+
+val it = VI 81 : ValueInMemory
+
+val it = VTrash : ValueInMemory
+
+val it = VI 0 : ValueInMemory
+
+val it = VTrash : ValueInMemory
+
+val it = VB false : ValueInMemory
+
+val MeaningInstruction_TC3 = fn : ProgStateInMemory
+
+val it = VI 9 : ValueInMemory
+
+val it = VI 0 : ValueInMemory
+
+val it = VI 8 : ValueInMemory
+
+val it = VI 9 : ValueInMemory
+
+val it = VI 8 : ValueInMemory
+
+val it = VTrash : ValueInMemory
+
+val MeaningInstruction_TC4 = fn : ProgStateInMemory
+
+val it = VI 9 : ValueInMemory
+
+val it = VI 8 : ValueInMemory
+
+val it = VI 81 : ValueInMemory
+
+val it = VI 1 : ValueInMemory
+
+val it = VI 1 : ValueInMemory
+
+val it = VTrash : ValueInMemory
+
+exception InvalidProgram
+
+val MeaningProgram = fn : Program -> ProgStateInMemory
+
+val MyResult1 = fn : ProgStateInMemory
+
+val it = VI 9 : ValueInMemory
+
+val it = VI 0 : ValueInMemory
+
+val it = VI 8 : ValueInMemory
+
+val it = VI 8 : ValueInMemory
+
+val it = VI 9 : ValueInMemory
+
+val it = VB true : ValueInMemory
+
+val it = VTrash : ValueInMemory
+- 
